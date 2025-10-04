@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&display=swap");
+@import "tailwindcss" theme(static);
+@import "@nuxt/ui";
+
+@source "../../../../../layers/**/*.vue";
+
+@theme {
+  --color-blue-50: #e6eaf2;
+  --color-blue-100: #ccd5e5;
+  --color-blue-200: #99abcb;
+  --color-blue-300: #6681b1;
+  --color-blue-400: #2563eb;
+  --color-blue-500: #002868; /* primary */
+  --color-blue-600: #002053;
+  --color-blue-700: #00183e;
+  --color-blue-800: #001029;
+  --color-blue-900: #000814;
+  --color-blue-950: #000407;
+
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #d6052f;
+  --color-red-500: #b20429; /* secondary */
+  --color-red-600: #8e0320;
+  --color-red-700: #6a0218;
+  --color-red-800: #460110;
+  --color-red-900: #220008;
+  --color-red-950: #110004;
+
+  --color-gray-50: #f8f9fb;
+  --color-gray-300: #403e47;
+
+  --color-header: #111827;
+  --color-white-50: #f5f5f5;
+}
+
+:root {
+  --ui-primary: var(--color-blue-500);
+  --ui-secondary: var(--color-red-500);
+
+  /* --ui-bg: var(--color-gray-50);
+  --ui-bg-muted: var(--color-gray-100); */
+  --ui-bg: var(--color-gray-50);
+  --ui-bg-muted: var(--ui-color-neutral-50);
+  --ui-bg-elevated: var(--ui-color-neutral-100);
+  --ui-bg-accented: var(--ui-color-neutral-200);
+  --ui-bg-inverted: var(--ui-color-neutral-900);
+
+  /* Text Colors */
+  --ui-text: var(--color-black);
+  --ui-text-muted: #3f3f3f; /* var(--color-gray-100); */
+  --ui-text-dimmed: var(--color-gray-400);
+  --ui-text-highlighted: var(--color-gray-300);
+  --ui-text-inverted: var(--color-white);
+
+  --ui-font-title: "DM Sans", sans-serif;
+  --ui-font-body: "Outfit", sans-serif;
+}
+
+body {
+  font-family: var(--ui-font-body);
+}
+
+.title {
+  font-weight: 500;
+  font-family: var(--ui-font-title);
+}
+
+.title-1 {
+  font-size: 3rem;
+}
+
+.title-2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.title-3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.title-4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
