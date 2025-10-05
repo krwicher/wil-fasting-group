@@ -1,8 +1,11 @@
-import type { UserStats } from "~/layers/base/shared/types/profile";
+import { StatsRepository } from "~/layers/base/app/repositories/statsRepository";
+import type { UserStats } from "~/layers/base/app/repositories/statsRepository";
 
 export const useUserStats = () => {
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
+
+  const repository = new StatsRepository(supabase);
 
   const stats = ref<UserStats | null>(null);
   const loading = ref(false);
@@ -23,17 +26,7 @@ export const useUserStats = () => {
     error.value = null;
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from("user_profiles")
-        .select(
-          "total_fasts_completed, total_hours_fasted, longest_fast_hours, current_streak_days"
-        )
-        .eq("id", targetUserId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      stats.value = data;
+      stats.value = await repository.getUserStats(targetUserId);
     } catch (err) {
       error.value = (err as Error).message;
       console.error("Error fetching stats:", err);
@@ -46,26 +39,15 @@ export const useUserStats = () => {
    * Format hours for display (e.g., "48.5 hours" or "2 days 0.5 hours")
    */
   const formatHours = (hours: number): string => {
-    if (hours < 24) {
-      return `${hours.toFixed(1)} hours`;
-    }
-
-    const days = Math.floor(hours / 24);
-    const remainingHours = hours % 24;
-
-    if (remainingHours === 0) {
-      return `${days} ${days === 1 ? "day" : "days"}`;
-    }
-
-    return `${days} ${days === 1 ? "day" : "days"} ${remainingHours.toFixed(1)} hours`;
+    return repository.formatHours(hours);
   };
 
   /**
    * Calculate average fast duration
    */
   const averageFastDuration = computed(() => {
-    if (!stats.value || stats.value.total_fasts_completed === 0) return 0;
-    return stats.value.total_hours_fasted / stats.value.total_fasts_completed;
+    if (!stats.value) return 0;
+    return repository.calculateAverageFastDuration(stats.value);
   });
 
   /**
@@ -73,31 +55,7 @@ export const useUserStats = () => {
    */
   const getMotivationalMessage = computed(() => {
     if (!stats.value) return "Start your fasting journey today!";
-
-    const { total_fasts_completed, total_hours_fasted, current_streak_days } =
-      stats.value;
-
-    if (total_fasts_completed === 0) {
-      return "Ready to start your first fast?";
-    }
-
-    if (current_streak_days >= 7) {
-      return `Amazing! ${current_streak_days} day streak!`;
-    }
-
-    if (total_hours_fasted >= 1000) {
-      return "You're a fasting legend! 🏆";
-    }
-
-    if (total_hours_fasted >= 500) {
-      return "Incredible dedication! Keep it up! 💪";
-    }
-
-    if (total_hours_fasted >= 100) {
-      return "You're on a roll! Keep going! 🔥";
-    }
-
-    return "Great start! Stay consistent! ⭐";
+    return repository.getMotivationalMessage(stats.value);
   });
 
   /**
@@ -105,15 +63,7 @@ export const useUserStats = () => {
    */
   const achievementLevel = computed(() => {
     if (!stats.value) return "Beginner";
-
-    const hours = stats.value.total_hours_fasted;
-
-    if (hours >= 1000) return "Legend";
-    if (hours >= 500) return "Master";
-    if (hours >= 250) return "Expert";
-    if (hours >= 100) return "Advanced";
-    if (hours >= 50) return "Intermediate";
-    return "Beginner";
+    return repository.getAchievementLevel(stats.value);
   });
 
   /**

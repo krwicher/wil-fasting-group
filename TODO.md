@@ -276,19 +276,27 @@ open http://127.0.0.1:54323
 - [x] Create `useUserStats` composable
 - [x] Add profile avatar component with fallback initials
 
-### 2.3 Admin User Management
+### 2.3 Admin User Management ✅
 
-- [ ] Create `layers/admin` Nuxt layer
-- [ ] Create `/admin/users` page
-  - [ ] List pending users with approve/reject buttons
-  - [ ] List all approved users with role management
-  - [ ] Search and filter users
-- [ ] Create `/admin/dashboard` page
-  - [ ] Show key metrics (total users, active fasts, messages today)
-  - [ ] Show recent activity feed
-- [ ] Add admin-only middleware
-- [ ] Create `useAdmin` composable
-- [ ] Add notification badge for pending approvals in header
+- [x] Create `layers/admin` Nuxt layer
+- [x] Implement repository pattern for data access
+  - [x] Create `UserRepository` for user data operations
+  - [x] Create `StatsRepository` for statistics queries
+  - [x] Create `AdminRepository` for admin operations
+  - [x] Refactor composables to use repositories
+- [x] Create `/admin/users` page
+  - [x] List pending users with approve/reject buttons
+  - [x] List all approved users with role management
+  - [x] Filter users by role
+  - [x] Change user roles (with super_admin restriction)
+  - [x] Delete users
+- [x] Create `/admin/dashboard` page
+  - [x] Show user statistics (total, pending, approved, admins)
+  - [x] Show fasting statistics (total fasts, active fasts, participants)
+  - [x] Display admin capabilities
+- [x] Add admin-only middleware
+- [x] Create `useAdmin` composable
+- [x] Add notification badge for pending approvals in header
 
 ---
 

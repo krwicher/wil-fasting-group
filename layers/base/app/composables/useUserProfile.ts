@@ -1,9 +1,12 @@
 import type { UserProfile, UpdateProfileData } from "~/layers/base/shared/types/profile";
+import { UserRepository } from "~/layers/base/app/repositories/userRepository";
 
 export const useUserProfile = () => {
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
   const toast = useToast();
+
+  const repository = new UserRepository(supabase);
 
   const profile = ref<UserProfile | null>(null);
   const loading = ref(false);
@@ -22,15 +25,7 @@ export const useUserProfile = () => {
     error.value = null;
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", user.value.id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      profile.value = data;
+      profile.value = await repository.getProfile(user.value.id);
     } catch (err) {
       error.value = (err as Error).message;
       console.error("Error fetching profile:", err);
@@ -44,15 +39,7 @@ export const useUserProfile = () => {
    */
   const fetchProfileById = async (userId: string): Promise<UserProfile | null> => {
     try {
-      const { data, error: fetchError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      return data;
+      return await repository.getProfile(userId);
     } catch (err) {
       console.error("Error fetching profile by ID:", err);
       return null;
@@ -72,12 +59,7 @@ export const useUserProfile = () => {
     error.value = null;
 
     try {
-      const { error: updateError } = await supabase
-        .from("user_profiles")
-        .update(updates)
-        .eq("id", user.value.id);
-
-      if (updateError) throw updateError;
+      await repository.updateProfile(user.value.id, updates);
 
       // Refresh profile data
       await fetchProfile();
@@ -119,27 +101,16 @@ export const useUserProfile = () => {
     error.value = null;
 
     try {
-      // Generate unique filename
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.value.id}_${Date.now()}.${fileExt}`;
-      const filePath = `${user.value.id}/${fileName}`;
+      await repository.uploadAvatar(user.value.id, file);
 
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, {
-          upsert: true,
-        });
+      // Refresh profile data
+      await fetchProfile();
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      // Update profile with new avatar URL
-      await updateProfile({ avatar_url: data.publicUrl });
+      toast.add({
+        title: "Avatar uploaded",
+        icon: "i-lucide-check-circle",
+        color: "success",
+      });
 
       return true;
     } catch (err) {
@@ -211,17 +182,7 @@ export const useUserProfile = () => {
    * Get user initials from display name or email
    */
   const getUserInitials = (userProfile: UserProfile | null): string => {
-    if (!userProfile) return "?";
-
-    if (userProfile.display_name) {
-      const names = userProfile.display_name.trim().split(" ");
-      if (names.length >= 2) {
-        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-      }
-      return names[0].substring(0, 2).toUpperCase();
-    }
-
-    return "U";
+    return repository.getUserInitials(userProfile);
   };
 
   return {

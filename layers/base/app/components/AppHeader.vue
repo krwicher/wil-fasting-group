@@ -1,5 +1,31 @@
 <script setup lang="ts">
 const { isAuthenticated, signOut } = useAuth();
+const { isAdmin } = useUserRole();
+
+const pendingCount = ref(0);
+
+// Fetch pending count for admins
+const fetchPendingCount = async () => {
+  if (!isAdmin.value) return;
+
+  try {
+    const { getPendingCount } = useAdmin();
+    pendingCount.value = await getPendingCount();
+  } catch (error) {
+    console.error("Failed to fetch pending count:", error);
+  }
+};
+
+// Fetch on mount and every 30 seconds
+onMounted(async () => {
+  await fetchPendingCount();
+
+  // Poll for updates every 30 seconds
+  if (isAdmin.value) {
+    setInterval(fetchPendingCount, 30000);
+  }
+});
+
 const searchTerm = ref("");
 const navigationItems = ref([
   {
@@ -36,6 +62,26 @@ const navigationItems = ref([
           </template>
           <template v-else>
             <div class="flex items-center gap-4">
+              <!-- Admin Dashboard Link with Badge -->
+              <UButton
+                v-if="isAdmin"
+                variant="outline"
+                icon="i-lucide-shield"
+                to="/admin/dashboard"
+                class="relative"
+              >
+                <span class="hidden lg:inline">Admin</span>
+                <UBadge
+                  v-if="pendingCount > 0"
+                  color="error"
+                  variant="solid"
+                  class="absolute -top-1 -right-1"
+                  size="xs"
+                >
+                  {{ pendingCount }}
+                </UBadge>
+              </UButton>
+
               <UButton variant="solid" icon="i-lucide-user" to="/profile">
                 <span class="hidden lg:inline">Konto użytkownika</span>
               </UButton>
