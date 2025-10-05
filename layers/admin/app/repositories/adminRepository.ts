@@ -1,6 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { AdminUser, AdminStats } from "~/layers/admin/shared/types/admin";
-import type { UserRole } from "~/layers/auth/app/composables/useAuth";
 
 export class AdminRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -22,7 +20,7 @@ export class AdminRepository {
       display_name: user.user_metadata?.display_name || null,
       role: (user.user_metadata?.role || "pending") as UserRole,
       created_at: user.created_at,
-      updated_at: user.updated_at,
+      updated_at: user.updated_at || null,
       last_sign_in_at: user.last_sign_in_at || null,
     }));
 
@@ -32,7 +30,10 @@ export class AdminRepository {
     }
 
     // Sort by created_at descending (newest first)
-    mappedUsers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    mappedUsers.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     return mappedUsers;
   }
@@ -66,7 +67,8 @@ export class AdminRepository {
    */
   async getAdminStats(): Promise<AdminStats> {
     // Fetch all users
-    const { data: allUsersData, error: usersError } = await this.supabase.auth.admin.listUsers();
+    const { data: allUsersData, error: usersError } =
+      await this.supabase.auth.admin.listUsers();
 
     if (usersError) {
       throw new Error(`Failed to fetch users: ${usersError.message}`);
@@ -75,9 +77,15 @@ export class AdminRepository {
     const allUsers = allUsersData.users;
 
     // Count users by role
-    const pendingCount = allUsers.filter((u) => u.user_metadata?.role === "pending").length;
-    const approvedCount = allUsers.filter((u) => u.user_metadata?.role === "approved").length;
-    const adminCount = allUsers.filter((u) => ["admin", "super_admin"].includes(u.user_metadata?.role)).length;
+    const pendingCount = allUsers.filter(
+      (u) => u.user_metadata?.role === "pending"
+    ).length;
+    const approvedCount = allUsers.filter(
+      (u) => u.user_metadata?.role === "approved"
+    ).length;
+    const adminCount = allUsers.filter((u) =>
+      ["admin", "super_admin"].includes(u.user_metadata?.role)
+    ).length;
 
     // Fetch fast counts
     const { count: totalFasts, error: fastsError } = await this.supabase
@@ -94,16 +102,21 @@ export class AdminRepository {
       .eq("status", "active");
 
     if (activeFastsError) {
-      throw new Error(`Failed to fetch active fasts: ${activeFastsError.message}`);
+      throw new Error(
+        `Failed to fetch active fasts: ${activeFastsError.message}`
+      );
     }
 
     // Fetch participant count
-    const { count: totalParticipants, error: participantsError } = await this.supabase
-      .from("fast_participants")
-      .select("*", { count: "exact", head: true });
+    const { count: totalParticipants, error: participantsError } =
+      await this.supabase
+        .from("fast_participants")
+        .select("*", { count: "exact", head: true });
 
     if (participantsError) {
-      throw new Error(`Failed to fetch participants: ${participantsError.message}`);
+      throw new Error(
+        `Failed to fetch participants: ${participantsError.message}`
+      );
     }
 
     return {

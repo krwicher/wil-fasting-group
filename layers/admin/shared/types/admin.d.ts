@@ -6,7 +6,7 @@ export interface AdminUser {
   display_name: string | null;
   role: UserRole;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
   last_sign_in_at: string | null;
 }
 

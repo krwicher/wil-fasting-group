@@ -1,6 +1,5 @@
-import { AdminRepository } from "~/layers/admin/app/repositories/adminRepository";
-import type { AdminUser, AdminStats } from "~/layers/admin/shared/types/admin";
-import type { UserRole } from "~/layers/auth/app/composables/useAuth";
+import { AdminRepository } from "../repositories/adminRepository";
+import type { AdminUser, AdminStats } from "../../shared/types/admin";
 
 export const useAdmin = () => {
   const supabase = useSupabaseClient();
@@ -45,7 +44,10 @@ export const useAdmin = () => {
   /**
    * Update user role (admin only)
    */
-  const updateUserRole = async (userId: string, newRole: UserRole): Promise<boolean> => {
+  const updateUserRole = async (
+    userId: string,
+    newRole: UserRole
+  ): Promise<boolean> => {
     if (!isAdmin.value) {
       error.value = "Unauthorized";
       return false;
