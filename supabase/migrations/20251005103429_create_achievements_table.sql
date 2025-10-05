@@ -5,7 +5,7 @@ create table public.achievements (
   -- Achievement details
   name text not null check (char_length(name) >= 1 and char_length(name) <= 100),
   description text not null check (char_length(description) >= 1 and char_length(description) <= 500),
-  icon text not null check (char_length(icon) >= 1 and char_length(icon) <= 50), -- Emoji or icon identifier
+  icon text not null check (char_length(icon) >= 1 and char_length(icon) <= 50), -- Icon identifier for frontend
   category text not null check (category in (
     'fasting_duration',
     'participation',
@@ -72,26 +72,26 @@ create trigger update_achievements_updated_at
 -- Seed some default achievements
 insert into public.achievements (name, description, icon, category, requirement_type, requirement_value, tier, display_order) values
   -- Fasting duration achievements
-  ('First Fast', 'Complete your first fast', '<', 'fasting_duration', 'total_fasts_completed', 1, 'bronze', 1),
-  ('24-Hour Warrior', 'Fast for 24 hours straight', 'ð', 'fasting_duration', 'longest_fast_hours', 24, 'bronze', 2),
-  ('48-Hour Champion', 'Fast for 48 hours straight', '<Æ', 'fasting_duration', 'longest_fast_hours', 48, 'silver', 3),
-  ('72-Hour Master', 'Fast for 72 hours straight', '=Q', 'fasting_duration', 'longest_fast_hours', 72, 'gold', 4),
-  ('5-Day Legend', 'Fast for 5 days (120 hours) straight', '>…', 'fasting_duration', 'longest_fast_hours', 120, 'platinum', 5),
-  ('Week Warrior', 'Fast for 7 days (168 hours) straight', '”', 'fasting_duration', 'longest_fast_hours', 168, 'diamond', 6),
+  ('First Fast', 'Complete your first fast', 'star', 'fasting_duration', 'total_fasts_completed', 1, 'bronze', 1),
+  ('24-Hour Warrior', 'Fast for 24 hours straight', 'clock', 'fasting_duration', 'longest_fast_hours', 24, 'bronze', 2),
+  ('48-Hour Champion', 'Fast for 48 hours straight', 'trophy', 'fasting_duration', 'longest_fast_hours', 48, 'silver', 3),
+  ('72-Hour Master', 'Fast for 72 hours straight', 'crown', 'fasting_duration', 'longest_fast_hours', 72, 'gold', 4),
+  ('5-Day Legend', 'Fast for 5 days (120 hours) straight', 'eagle', 'fasting_duration', 'longest_fast_hours', 120, 'platinum', 5),
+  ('Week Warrior', 'Fast for 7 days (168 hours) straight', 'sword', 'fasting_duration', 'longest_fast_hours', 168, 'diamond', 6),
 
   -- Total hours achievements
-  ('100 Hours Club', 'Fast for a total of 100 hours', '=¯', 'milestones', 'total_hours_fasted', 100, 'bronze', 10),
-  ('500 Hours Club', 'Fast for a total of 500 hours', '=%', 'milestones', 'total_hours_fasted', 500, 'silver', 11),
-  ('1000 Hours Club', 'Fast for a total of 1000 hours', '=Ž', 'milestones', 'total_hours_fasted', 1000, 'gold', 12),
+  ('100 Hours Club', 'Fast for a total of 100 hours', 'hundred', 'milestones', 'total_hours_fasted', 100, 'bronze', 10),
+  ('500 Hours Club', 'Fast for a total of 500 hours', 'fire', 'milestones', 'total_hours_fasted', 500, 'silver', 11),
+  ('1000 Hours Club', 'Fast for a total of 1000 hours', 'gem', 'milestones', 'total_hours_fasted', 1000, 'gold', 12),
 
   -- Participation achievements
-  ('Team Player', 'Join your first group fast', '>', 'participation', 'group_fasts_joined', 1, 'bronze', 20),
-  ('Fast Enthusiast', 'Join 5 group fasts', '<¯', 'participation', 'group_fasts_joined', 5, 'silver', 21),
-  ('Fast Veteran', 'Join 10 group fasts', '<', 'participation', 'group_fasts_joined', 10, 'gold', 22),
-  ('Fast Leader', 'Create your first group fast', '=€', 'participation', 'group_fasts_created', 1, 'bronze', 23),
+  ('Team Player', 'Join your first group fast', 'handshake', 'participation', 'group_fasts_joined', 1, 'bronze', 20),
+  ('Fast Enthusiast', 'Join 5 group fasts', 'target', 'participation', 'group_fasts_joined', 5, 'silver', 21),
+  ('Fast Veteran', 'Join 10 group fasts', 'sparkles', 'participation', 'group_fasts_joined', 10, 'gold', 22),
+  ('Fast Leader', 'Create your first group fast', 'rocket', 'participation', 'group_fasts_created', 1, 'bronze', 23),
 
   -- Consistency achievements
-  ('Consistent Faster', 'Complete 5 fasts', '=Ê', 'consistency', 'total_fasts_completed', 5, 'bronze', 30),
-  ('Dedicated Faster', 'Complete 10 fasts', '=ª', 'consistency', 'total_fasts_completed', 10, 'silver', 31),
-  ('Fasting Pro', 'Complete 25 fasts', '>G', 'consistency', 'total_fasts_completed', 25, 'gold', 32),
-  ('Fasting Master', 'Complete 50 fasts', '=Q', 'consistency', 'total_fasts_completed', 50, 'platinum', 33);
+  ('Consistent Faster', 'Complete 5 fasts', 'chart', 'consistency', 'total_fasts_completed', 5, 'bronze', 30),
+  ('Dedicated Faster', 'Complete 10 fasts', 'muscle', 'consistency', 'total_fasts_completed', 10, 'silver', 31),
+  ('Fasting Pro', 'Complete 25 fasts', 'medal', 'consistency', 'total_fasts_completed', 25, 'gold', 32),
+  ('Fasting Master', 'Complete 50 fasts', 'king', 'consistency', 'total_fasts_completed', 50, 'platinum', 33);
