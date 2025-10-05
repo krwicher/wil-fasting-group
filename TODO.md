@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phase**: Foundation Setup - Phase 1.2 Complete
+**Phase**: Foundation Setup - Phase 1.4 Complete
 **Last Updated**: October 5, 2025
 
 ---
@@ -151,62 +151,85 @@ open http://127.0.0.1:54323
 - [x] Create utility functions - `20251005095000_create_utility_functions.sql`
   - [x] `update_updated_at_column()` trigger function
 
-### 1.3 Database Schema - Supporting Tables
+### 1.3 Database Schema - Supporting Tables ✅
 
-- [ ] Create migration: `notifications` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `user_id` (uuid, FK to users)
-  - [ ] `type` text (e.g., 'fast_joined', 'milestone', 'chat_message')
-  - [ ] `title` text
-  - [ ] `message` text
-  - [ ] `related_id` uuid (nullable, for linking to fasts/messages)
-  - [ ] `read_at` timestamptz (nullable)
-  - [ ] `created_at` timestamp
-  - [ ] Add RLS policies
-  - [ ] Add index on user_id and read_at
-- [ ] Create migration: `chat_messages` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `group_fast_id` (uuid, FK to group_fasts)
-  - [ ] `user_id` (uuid, FK to users)
-  - [ ] `message` text
-  - [ ] `created_at`, `updated_at`, `deleted_at` timestamps
-  - [ ] Add RLS policies
-  - [ ] Add index on group_fast_id and created_at
-- [ ] Create migration: `chat_bans` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `user_id` (uuid, FK to users)
-  - [ ] `group_fast_id` (uuid, FK to group_fasts)
-  - [ ] `banned_by` (uuid, FK to users)
-  - [ ] `reason` text
-  - [ ] `created_at` timestamp
-  - [ ] Add unique constraint: user_id + group_fast_id
-  - [ ] Add RLS policies
-- [ ] Create migration: `achievements` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `name` text
-  - [ ] `description` text
-  - [ ] `icon` text
-  - [ ] `requirement_type` text (e.g., 'total_hours', 'longest_fast', 'streak')
-  - [ ] `requirement_value` integer
-  - [ ] `created_at` timestamp
-- [ ] Create migration: `user_achievements` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `user_id` (uuid, FK to users)
-  - [ ] `achievement_id` (uuid, FK to achievements)
-  - [ ] `earned_at` timestamp
-  - [ ] Add unique constraint: user_id + achievement_id
-  - [ ] Add RLS policies
+- [x] Create migration: `notifications` table - `20251005103034_create_notifications_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `user_id` (uuid, FK to users)
+  - [x] `type` text (user_joined_fast, fast_starting_soon, milestone_reached, new_chat_message, achievement_earned, admin_approval, admin_rejection, new_user_registration)
+  - [x] `title` text
+  - [x] `message` text
+  - [x] `related_entity_type` text (group_fast, personal_fast, user, achievement)
+  - [x] `related_entity_id` uuid (nullable)
+  - [x] `is_read` boolean, `read_at` timestamptz (nullable)
+  - [x] `created_at` timestamp
+  - [x] Add RLS policies (users view own, admins view all)
+  - [x] Add indexes on user_id, is_read, created_at, type
+  - [x] Functions: `mark_notification_read()`, `mark_all_notifications_read()`
+- [x] Create migration: `chat_messages` table - `20251005103151_create_chat_messages_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `group_fast_id` (uuid, FK to group_fasts)
+  - [x] `user_id` (uuid, FK to users)
+  - [x] `message` text
+  - [x] Moderation: `is_deleted`, `deleted_at`, `deleted_by`, `deletion_reason`
+  - [x] Edit tracking: `is_edited`, `edited_at`
+  - [x] `created_at` timestamp
+  - [x] Add RLS policies (participants view, participants send if not banned, users edit own, admins/creators delete)
+  - [x] Add indexes on group_fast_id, user_id, created_at, is_deleted
+  - [x] Functions: `delete_chat_message()`, trigger for `edited_at`
+- [x] Create migration: `chat_bans` table - `20251005103239_create_chat_bans_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `user_id` (uuid, FK to users)
+  - [x] `group_fast_id` (uuid, FK to group_fasts)
+  - [x] `banned_by` (uuid, FK to users)
+  - [x] `reason` text
+  - [x] `expires_at` timestamptz (nullable for permanent bans)
+  - [x] `created_at` timestamp
+  - [x] Add unique constraint: (group_fast_id, user_id)
+  - [x] Add RLS policies (participants view, admins/creators ban/unban)
+  - [x] Add indexes on group_fast_id, user_id, expires_at
+  - [x] Functions: `ban_user_from_chat()`, `unban_user_from_chat()`, `is_user_banned_from_chat()`
+- [x] Create migration: `achievements` table - `20251005103429_create_achievements_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `name`, `description`, `icon` text
+  - [x] `category` (fasting_duration, participation, consistency, community, milestones)
+  - [x] `requirement_type` (total_hours_fasted, total_fasts_completed, longest_fast_hours, consecutive_days_active, group_fasts_joined, group_fasts_created, chat_messages_sent, custom)
+  - [x] `requirement_value` numeric
+  - [x] `tier` (bronze, silver, gold, platinum, diamond)
+  - [x] `display_order` integer
+  - [x] `created_at`, `updated_at` timestamps
+  - [x] Add RLS policies (all view, admins manage)
+  - [x] Add indexes on category, tier, display_order
+  - [x] Seed 17 default achievements
+- [x] Create migration: `user_achievements` table - `20251005103630_create_user_achievements_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `user_id` (uuid, FK to users)
+  - [x] `achievement_id` (uuid, FK to achievements)
+  - [x] `progress` numeric, `is_completed` boolean
+  - [x] `earned_at`, `created_at`, `updated_at` timestamps
+  - [x] Add unique constraint: (user_id, achievement_id)
+  - [x] Add RLS policies (users view own, all view completed, admins view all)
+  - [x] Add indexes on user_id, achievement_id, is_completed, earned_at
+  - [x] Functions: `check_and_award_achievements()`, trigger on profile update
 
-### 1.4 Database Functions & Triggers
+### 1.4 Database Functions & Views ✅
 
-- [ ] Create function: `calculate_hours_fasted(start_time, end_time)` → returns decimal
-- [ ] Create function: `get_user_total_hours(user_id)` → returns decimal
-- [ ] Create function: `get_user_longest_fast(user_id)` → returns decimal
-- [ ] Create function: `get_user_current_streak(user_id)` → returns integer
-- [ ] Create trigger: Auto-update `updated_at` on all tables
-- [ ] Create trigger: Send notification when user joins a fast
-- [ ] Create trigger: Check achievement criteria when fast completed
-- [ ] Create function: `check_single_active_fast_constraint()` for participants
+- [x] Create helper functions - `20251005103832_create_helper_functions.sql`
+  - [x] `calculate_hours_fasted(started_at, ended_at)` → returns numeric
+  - [x] `calculate_progress_percentage(started_at, target_hours, ended_at)` → returns numeric
+  - [x] `get_user_active_fast(user_id)` → returns jsonb
+  - [x] `get_unread_notification_count(user_id)` → returns integer
+  - [x] `update_user_role(user_id, new_role)` → admin function
+  - [x] `end_fast(fast_type, fast_id, status, quit_reason)` → end group/personal fast
+  - [x] `leave_group_fast(participant_id)` → leave participation
+  - [x] `close_group_fast(fast_id)` → admin/creator close fast
+- [x] Create database views - `20251005103928_create_database_views.sql`
+  - [x] `group_fast_leaderboard` - participants ranked by hours fasted per fast
+  - [x] `global_leaderboard` - all users ranked by various metrics
+  - [x] `active_fasts_summary` - upcoming/active fasts with creator info
+  - [x] `user_fast_history` - combined personal and group fast history
+  - [x] `pending_user_approvals` - admin view of pending users
+  - [x] `recent_activity` - feed of recent completions and achievements
 
 ### 1.5 Seed Data
 
