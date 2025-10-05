@@ -1,23 +1,96 @@
 # TODO - What I've Learned Fasting Group App
 
 ## Current Status
-**Phase**: Foundation Setup
-**Last Updated**: October 4, 2025
+
+**Phase**: Foundation Setup - Phase 1.1 Complete
+**Last Updated**: October 5, 2025
 
 ---
 
 ## Phase 1: Foundation & Setup ⏳
 
-### 1.1 Supabase Project Setup
-- [ ] Create Supabase project for development
-- [ ] Install Supabase CLI locally
-- [ ] Initialize Supabase in project (`supabase init`)
-- [ ] Link local project to remote Supabase project
-- [ ] Set up environment variables in `.env`
-- [ ] Configure Supabase OAuth providers (Google, Apple)
-- [ ] Set up Supabase Storage bucket for avatars
+### 1.1 Supabase Project Setup (Hybrid Approach) ✅
+
+**Context**: We use a hybrid approach - local development for speed, remote staging for OAuth testing.
+
+- [x] Create Supabase project for development (remote staging)
+- [x] Install Supabase CLI locally
+- [x] Initialize Supabase in project (`supabase init`)
+- [x] Start Docker and run local Supabase stack (`supabase start`)
+- [x] Link local project to remote staging project (`supabase link --project-ref ujgmthzlrfwjqvbkgcet`)
+- [x] Set up environment variables in `.env` (local Supabase URLs)
+- [ ] **MANUAL TASK**: Configure OAuth providers (Google, Apple) on **remote staging** via Supabase Dashboard
+  - [ ] Set up Google OAuth in Google Cloud Console
+  - [ ] Set up Apple OAuth in Apple Developer Console
+  - [ ] Add OAuth credentials to Supabase Dashboard (remote staging)
+  - [ ] Configure redirect URLs for staging domain
+- [x] Set up Supabase Storage bucket for avatars (migration created: `20251005092725_create_avatars_bucket.sql`)
+- [x] Create `.env.staging` with remote staging credentials for OAuth testing
+- [x] Create `.env.local` for local development
+- [x] Document environment switching process (local vs staging)
+
+### 1.1b Development Workflow Documentation ✅
+
+- [x] Create `DEVELOPMENT.md` documenting:
+  - [x] When to use local vs remote staging
+  - [x] How to start local Supabase (`supabase start`)
+  - [x] How to switch between local and remote (`.env` vs `.env.staging`)
+  - [x] Migration workflow: local → staging → production
+  - [x] OAuth testing strategy on staging
+  - [x] Common commands reference
+  - [x] Better migration approach (psql instead of db reset)
+
+#### ✅ Phase 1.1 Verification Checklist
+
+Run these commands to verify Phase 1.1 is complete:
+
+```bash
+# 1. Check Supabase is linked
+cat .supabase/config.toml | grep project_id
+# Should show: project_id = "ujgmthzlrfwjqvbkgcet"
+
+# 2. Check environment files exist
+ls -la .env .env.local .env.staging
+# Should show all three files
+
+# 3. Check .env is using local by default
+cat .env | grep SUPABASE_URL
+# Should show: http://127.0.0.1:54321
+
+# 4. Check documentation exists
+ls -la DEVELOPMENT.md
+# Should exist
+
+# 5. Check storage bucket migration exists
+ls -la supabase/migrations/20251005092725_create_avatars_bucket.sql
+# Should exist
+
+# 6. Start Supabase and verify it works
+supabase start
+supabase status
+# Should show all services running
+
+# 7. Apply storage migration (first time only)
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres \
+  -f supabase/migrations/20251005092725_create_avatars_bucket.sql
+# Should complete without errors
+
+# 8. Verify bucket in Studio
+open http://127.0.0.1:54323
+# Navigate to Storage → should see "avatars" bucket
+```
+
+**Expected Results:**
+- ✅ Supabase linked to staging project
+- ✅ Three environment files exist
+- ✅ `.env` defaults to local development
+- ✅ `DEVELOPMENT.md` exists with comprehensive guide
+- ✅ Storage bucket migration created
+- ✅ Supabase starts successfully
+- ⚠️ OAuth configuration is pending (manual task via web consoles)
 
 ### 1.2 Database Schema - Core Tables
+
 - [ ] Create `user_roles` enum type (pending, approved, admin, super_admin)
 - [ ] Create `fast_status` enum type (upcoming, active, completed, closed)
 - [ ] Create `participation_status` enum type (active, completed, quit_early, extended)
@@ -72,6 +145,7 @@
   - [ ] Add RLS policies
 
 ### 1.3 Database Schema - Supporting Tables
+
 - [ ] Create migration: `notifications` table
   - [ ] `id` (uuid, PK)
   - [ ] `user_id` (uuid, FK to users)
@@ -117,6 +191,7 @@
   - [ ] Add RLS policies
 
 ### 1.4 Database Functions & Triggers
+
 - [ ] Create function: `calculate_hours_fasted(start_time, end_time)` → returns decimal
 - [ ] Create function: `get_user_total_hours(user_id)` → returns decimal
 - [ ] Create function: `get_user_longest_fast(user_id)` → returns decimal
@@ -127,6 +202,7 @@
 - [ ] Create function: `check_single_active_fast_constraint()` for participants
 
 ### 1.5 Seed Data
+
 - [ ] Create seed script: Default achievements (24hr, 48hr, 72hr, 5-day, 7-day, 100hr total, 500hr total)
 - [ ] Create seed script: First super admin user (for testing)
 - [ ] Add sample group fasts for testing
@@ -136,6 +212,7 @@
 ## Phase 2: Authentication & User Management 🔐
 
 ### 2.1 Authentication Flow Enhancement
+
 - [ ] Update `useAuth` composable to handle approval status
 - [ ] Create `useUserRole` composable for role checking
 - [ ] Add OAuth callback handling for Google
@@ -146,6 +223,7 @@
 - [ ] Add middleware to block unapproved users from main app
 
 ### 2.2 User Profile Pages
+
 - [ ] Create `/profile` page
   - [ ] Display user stats (total hours, longest fast, current streak)
   - [ ] Show circular progress indicator for active fast
@@ -162,6 +240,7 @@
 - [ ] Add profile avatar component with fallback initials
 
 ### 2.3 Admin User Management
+
 - [ ] Create `layers/admin` Nuxt layer
 - [ ] Create `/admin/users` page
   - [ ] List pending users with approve/reject buttons
@@ -179,6 +258,7 @@
 ## Phase 3: Core Fasting Features 🕐
 
 ### 3.1 Group Fasts - Create & List
+
 - [ ] Create `layers/fasting` Nuxt layer
 - [ ] Create `/fasts` page (group fasts listing)
   - [ ] Filter tabs: Upcoming, Active, Completed
@@ -195,6 +275,7 @@
 - [ ] Add fast creation form validation
 
 ### 3.2 Group Fasts - Detail & Participation
+
 - [ ] Create `/fasts/[id]` page
   - [ ] Show fast details (name, description, times, creator)
   - [ ] Display horizontal progress bars for all participants (sorted by hours)
@@ -209,6 +290,7 @@
 - [ ] Add real-time participant count (on page refresh)
 
 ### 3.3 Personal Fast Tracking
+
 - [ ] Create `/fasts/personal` page
   - [ ] Show active personal fast with circular progress
   - [ ] Display "Start Personal Fast" button
@@ -221,6 +303,7 @@
 - [ ] Add personal fast controls (start/end/extend)
 
 ### 3.4 Fast History & Stats
+
 - [ ] Create `FastHistory` component
   - [ ] Table view: date, name, duration, target, status
   - [ ] Filter by completed/quit/extended
@@ -238,6 +321,7 @@
 ## Phase 4: Social Features 💬
 
 ### 4.1 Group Chat
+
 - [ ] Create `ChatBox` component
   - [ ] Message list with user avatars
   - [ ] Message input textarea
@@ -260,6 +344,7 @@
 - [ ] Block banned users from sending messages
 
 ### 4.2 Leaderboards
+
 - [ ] Create `/leaderboard` page
   - [ ] Tabs: Monthly, All-Time
   - [ ] Metrics dropdown: Total Hours, Longest Fast, Most Fasts, Current Streak
@@ -271,6 +356,7 @@
 - [ ] Add "View Leaderboard" link in header navigation
 
 ### 4.3 Achievements & Badges
+
 - [ ] Create `/achievements` page
   - [ ] Grid of all achievements
   - [ ] Show locked/unlocked state
@@ -285,6 +371,7 @@
 - [ ] Display badge count on profile page
 
 ### 4.4 Notifications System
+
 - [ ] Create `NotificationBell` component in header
   - [ ] Badge with unread count
   - [ ] Dropdown list of recent notifications
@@ -312,6 +399,7 @@
 ## Phase 5: Admin Features & Moderation 🛡️
 
 ### 5.1 Fast Management
+
 - [ ] Add admin controls to `/fasts/[id]` page
   - [ ] "Close Fast" button (ends for everyone)
   - [ ] "Delete Fast" button with confirmation
@@ -325,6 +413,7 @@
 - [ ] Implement fast deletion (cascade to participants, chat)
 
 ### 5.2 Chat Moderation
+
 - [ ] Add "Delete" button to messages (visible to admins)
 - [ ] Add "Ban User from Chat" option in message context menu
 - [ ] Create `/admin/moderation` page
@@ -335,6 +424,7 @@
 - [ ] Display "banned from chat" indicator to user
 
 ### 5.3 User Moderation
+
 - [ ] Add user search to `/admin/users`
 - [ ] Add role change dropdown (admin can promote to admin, super admin only can promote to super admin)
 - [ ] Add "Suspend User" functionality (block access without deletion)
@@ -346,6 +436,7 @@
 ## Phase 6: Polish & UX Improvements ✨
 
 ### 6.1 UI/UX Enhancements
+
 - [ ] Extract brand colors from "What I've Learned" thumbnails
 - [ ] Update Tailwind config with brand colors
 - [ ] Create design system documentation
@@ -357,6 +448,7 @@
 - [ ] Create 404 and 500 error pages
 
 ### 6.2 Responsive Design
+
 - [ ] Test and fix mobile layouts for all pages
 - [ ] Optimize progress bars for small screens
 - [ ] Add mobile navigation menu
@@ -365,6 +457,7 @@
 - [ ] Optimize images for mobile
 
 ### 6.3 Performance Optimization
+
 - [ ] Add database indexes for frequently queried columns
 - [ ] Implement pagination for fast lists and chat messages
 - [ ] Add caching for leaderboard queries
@@ -373,6 +466,7 @@
 - [ ] Code splitting for admin routes
 
 ### 6.4 Accessibility
+
 - [ ] Add ARIA labels to all interactive elements
 - [ ] Ensure keyboard navigation works throughout app
 - [ ] Add focus indicators
@@ -385,6 +479,7 @@
 ## Phase 7: Testing & Quality Assurance 🧪
 
 ### 7.1 Automated Testing
+
 - [ ] Set up Vitest for unit tests
 - [ ] Write tests for composables (useAuth, useGroupFasts, etc.)
 - [ ] Write tests for utility functions (time calculations, etc.)
@@ -395,6 +490,7 @@
 - [ ] Add CI/CD pipeline for running tests
 
 ### 7.2 Manual Testing
+
 - [ ] Test OAuth login with Google
 - [ ] Test OAuth login with Apple
 - [ ] Test admin approval flow
@@ -408,6 +504,7 @@
 - [ ] Mobile device testing (iOS and Android)
 
 ### 7.3 User Acceptance Testing
+
 - [ ] Deploy to dev domain
 - [ ] Invite Joseph to test
 - [ ] Invite small group of community members
@@ -420,6 +517,7 @@
 ## Phase 8: Deployment & Launch 🚀
 
 ### 8.1 Pre-Launch Checklist
+
 - [ ] Set up production Supabase project
 - [ ] Run all migrations on production database
 - [ ] Set up production environment variables
@@ -430,6 +528,7 @@
 - [ ] Set up monitoring and error tracking (e.g., Sentry)
 
 ### 8.2 Deployment
+
 - [ ] Choose hosting platform (Vercel, Netlify, or custom)
 - [ ] Configure build settings
 - [ ] Deploy to staging environment
@@ -439,6 +538,7 @@
 - [ ] Test critical user flows on production
 
 ### 8.3 Post-Launch
+
 - [ ] Create first super admin account
 - [ ] Seed initial achievements
 - [ ] Create welcome announcement
@@ -451,28 +551,33 @@
 ## Future Enhancements (Post-v1) 🔮
 
 ### Real-Time Features
+
 - [ ] Add WebSocket support for real-time progress updates
 - [ ] Implement real-time chat messages
 - [ ] Add live notification updates
 
 ### Advanced Fast Types
+
 - [ ] Implement recurring weekly fasts
 - [ ] Add rolling start fasts (no fixed time)
 - [ ] Add fast templates (16:8, OMAD, etc. for shorter tracking)
 
 ### Analytics & Reporting
+
 - [ ] Create personal analytics dashboard
 - [ ] Add charts for fasting trends over time
 - [ ] Create community analytics page (admin only)
 - [ ] Export personal data to CSV
 
 ### Integrations
+
 - [ ] Apple Health integration
 - [ ] Google Fit integration
 - [ ] Calendar integration (add fasts to calendar)
 - [ ] Zapier/webhook support
 
 ### Community Enhancements
+
 - [ ] User-to-user direct messaging
 - [ ] Friend/follow system
 - [ ] Private groups within community
@@ -480,6 +585,7 @@
 - [ ] Community guidelines page
 
 ### Content & Education
+
 - [ ] Add fasting tips and articles
 - [ ] Create FAQ section
 - [ ] Add onboarding tutorial
@@ -490,18 +596,21 @@
 ## Notes & Decisions
 
 ### Technical Decisions
+
 - **Why Nuxt Layers?** Modular architecture allows independent development and testing of features
 - **Why Supabase?** Fast development, built-in auth, real-time capabilities, generous free tier
 - **Why no real-time in v1?** Simpler implementation, lower costs, easier to debug
 - **Why fixed-start fasts first?** Clearer group coordination, easier progress comparison
 
 ### Open Questions
+
 - [ ] Should we add a "Cancel Fast" feature (vs just ending early)?
 - [ ] Should leaderboard show all users or just top 100?
 - [ ] Should we add push notifications (browser/mobile)?
 - [ ] Should we allow users to edit their notes after ending a fast?
 
 ### Risks & Mitigation
+
 - **Risk**: Low user engagement
   - **Mitigation**: Add gamification early (achievements, leaderboards)
 - **Risk**: Timezone confusion

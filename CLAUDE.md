@@ -9,6 +9,7 @@
 This is the **What I've Learned Fasting Group App** - a closed community application for tracking multi-day group fasts. Users from the "What I've Learned" YouTube channel community can create and join extended fasting periods (48hr, 72hr, 5-day, etc.), track their progress, compete on leaderboards, and chat with other participants.
 
 Key characteristics:
+
 - **Community-first**: Social accountability is central to the design
 - **Multi-day fasts**: Not for interval fasting (16:8), but extended fasting periods
 - **Admin-gated**: All users require approval from admins before accessing the app
@@ -21,6 +22,7 @@ See `PROJECT.md` for comprehensive project overview and `TODO.md` for implementa
 ## Tech Stack
 
 ### Core Technologies
+
 - **Nuxt 4** (Vue 3) - Full-stack framework
 - **Supabase** - Backend-as-a-Service (Auth, PostgreSQL, Storage)
 - **Tailwind CSS 4** - Styling via @nuxt/ui
@@ -28,7 +30,9 @@ See `PROJECT.md` for comprehensive project overview and `TODO.md` for implementa
 - **pnpm** - Package manager
 
 ### Architecture Pattern
+
 This project uses **Nuxt Layers** for modular architecture:
+
 - `layers/base/` - UI components, layouts, global styles
 - `layers/auth/` - Authentication logic and pages
 - `layers/fasting/` - (to be created) Fast tracking features
@@ -42,6 +46,7 @@ Each layer is a self-contained Nuxt application with its own `nuxt.config.ts`.
 ## Code Conventions
 
 ### File Structure
+
 ```
 layers/[layer-name]/
 ├── app/
@@ -59,6 +64,7 @@ layers/[layer-name]/
 ```
 
 ### Naming Conventions
+
 - **Components**: PascalCase (`GroupFastCard.vue`, `CircularProgress.vue`)
 - **Composables**: camelCase with `use` prefix (`useGroupFasts.ts`, `useAuth.ts`)
 - **Pages**: kebab-case (`sign-in.vue`, `fasts/[id].vue`)
@@ -66,24 +72,26 @@ layers/[layer-name]/
 - **TypeScript types**: PascalCase (`GroupFast`, `FastParticipant`)
 
 ### Component Structure
+
 Use Composition API with `<script setup>`:
+
 ```vue
 <script setup lang="ts">
 // Props
 const props = defineProps<{
-  fastId: string
-}>()
+  fastId: string;
+}>();
 
 // Composables
-const { user } = useAuth()
+const { user } = useAuth();
 
 // State
-const loading = ref(false)
+const loading = ref(false);
 
 // Computed
 const isJoined = computed(() => {
   // ...
-})
+});
 
 // Methods
 async function joinFast() {
@@ -97,32 +105,35 @@ async function joinFast() {
 ```
 
 ### Composables Pattern
+
 Composables should:
+
 - Return reactive values and methods
 - Use `ref` for primitive values, `reactive` for objects (or `ref` for consistency)
 - Export a clear interface
 
 Example:
+
 ```ts
 export const useGroupFasts = () => {
-  const supabase = useSupabaseClient()
-  const fasts = ref<GroupFast[]>([])
-  const loading = ref(false)
+  const supabase = useSupabaseClient();
+  const fasts = ref<GroupFast[]>([]);
+  const loading = ref(false);
 
   async function fetchFasts(status?: FastStatus) {
-    loading.value = true
+    loading.value = true;
     try {
       const { data, error } = await supabase
-        .from('group_fasts')
-        .select('*')
-        .eq('status', status ?? 'active')
+        .from("group_fasts")
+        .select("*")
+        .eq("status", status ?? "active");
 
-      if (error) throw error
-      fasts.value = data
+      if (error) throw error;
+      fasts.value = data;
     } catch (error) {
-      console.error('Error fetching fasts:', error)
+      console.error("Error fetching fasts:", error);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -130,31 +141,33 @@ export const useGroupFasts = () => {
     fasts: readonly(fasts),
     loading: readonly(loading),
     fetchFasts,
-  }
-}
+  };
+};
 ```
 
 ### TypeScript Guidelines
+
 - **Always use TypeScript** for `.ts` and `.vue` files
 - Define types in `shared/types/` for cross-layer sharing
 - Use Zod for runtime validation (forms, API responses)
 - Leverage Supabase generated types
 
 Example type definition:
+
 ```ts
 // layers/fasting/shared/types/fast.d.ts
-export type FastStatus = 'upcoming' | 'active' | 'completed' | 'closed'
+export type FastStatus = "upcoming" | "active" | "completed" | "closed";
 
 export interface GroupFast {
-  id: string
-  name: string
-  description: string
-  creator_id: string
-  start_time: string // ISO timestamp
-  target_duration_hours: number
-  status: FastStatus
-  created_at: string
-  updated_at: string
+  id: string;
+  name: string;
+  description: string;
+  creator_id: string;
+  start_time: string; // ISO timestamp
+  target_duration_hours: number;
+  status: FastStatus;
+  created_at: string;
+  updated_at: string;
 }
 ```
 
@@ -162,22 +175,99 @@ export interface GroupFast {
 
 ## Database Guidelines
 
+### Hybrid Development Workflow
+
+This project uses **local-first development with remote staging for OAuth**:
+
+#### When to Use Local Development
+- ✅ Creating database migrations
+- ✅ Testing business logic and queries
+- ✅ Building UI components
+- ✅ Fast iteration on schema changes
+- ✅ Offline work
+
+#### When to Use Remote Staging
+- ✅ Testing OAuth flows (Google/Apple login)
+- ✅ Testing Storage bucket (avatar uploads)
+- ✅ Full integration testing before production
+- ✅ Sharing work with stakeholders
+
+#### Environment Setup
+
+**Local Development (.env)**:
+```bash
+SUPABASE_URL=http://localhost:54321
+SUPABASE_KEY=<local-anon-key-from-supabase-status>
+NUXT_SESSION_PASSWORD=<random-32-chars>
+```
+
+**Remote Staging (.env.staging)**:
+```bash
+SUPABASE_URL=https://your-staging-project.supabase.co
+SUPABASE_KEY=<staging-anon-key>
+NUXT_SESSION_PASSWORD=<same-as-above>
+```
+
+#### Switching Between Environments
+
+```bash
+# Work locally (default)
+cp .env.local .env  # or just use your default .env
+supabase start
+pnpm dev
+
+# Test OAuth on staging
+cp .env.staging .env
+pnpm dev  # Now connected to remote staging
+
+# Back to local
+cp .env.local .env
+pnpm dev
+```
+
 ### Supabase CLI Workflow
+
 Always use migrations for schema changes:
 
 ```bash
-# Create a new migration
+# 1. Create a new migration (always local first)
 supabase migration new create_group_fasts_table
 
-# Edit the generated file in supabase/migrations/
-# Then apply it locally
+# 2. Edit the generated file in supabase/migrations/
+
+# 3. Apply it locally (resets local DB and applies all migrations)
 supabase db reset
 
-# Push to remote (production)
+# 4. Test locally
+pnpm dev
+
+# 5. When ready, push to remote staging
+supabase link --project-ref <staging-id>  # One-time
+supabase db push
+
+# 6. Test on staging with OAuth
+cp .env.staging .env
+pnpm dev
+
+# 7. Later, push same migrations to production
+supabase link --project-ref <production-id>
 supabase db push
 ```
 
+### Daily Development Workflow
+
+**Typical day:**
+1. Start Docker: Ensure Docker app is running
+2. Start local Supabase: `supabase start`
+3. Develop locally: `pnpm dev`
+4. Make schema changes: `supabase migration new <name>`
+5. Test locally: `supabase db reset && pnpm dev`
+6. Push to staging when ready: `supabase db push`
+7. Test OAuth on staging: Switch to `.env.staging` and test login flows
+8. Commit migrations: `git add supabase/migrations/ && git commit`
+
 ### Migrations Best Practices
+
 - **One migration per logical change** (e.g., one table, one set of related changes)
 - **Include rollback logic** when possible
 - **Always add RLS policies** in the same migration as table creation
@@ -185,6 +275,7 @@ supabase db push
 - **Add comments** explaining complex logic
 
 Example migration:
+
 ```sql
 -- Create group_fasts table
 create table public.group_fasts (
@@ -232,6 +323,7 @@ create trigger update_group_fasts_updated_at
 ```
 
 ### Row-Level Security (RLS)
+
 **Always enable RLS** on all tables. Common patterns:
 
 ```sql
@@ -261,27 +353,30 @@ create policy "Admins can manage all data"
 ```
 
 ### Supabase Queries
+
 Use the Supabase client for all database operations:
 
 ```ts
 // Good: Type-safe query
 const { data, error } = await supabase
-  .from('group_fasts')
-  .select(`
+  .from("group_fasts")
+  .select(
+    `
     *,
     creator:users!creator_id (
       id,
       email,
       raw_user_meta_data
     )
-  `)
-  .eq('status', 'active')
-  .order('start_time', { ascending: true })
+  `
+  )
+  .eq("status", "active")
+  .order("start_time", { ascending: true });
 
 // Handle errors properly
 if (error) {
-  console.error('Database error:', error)
-  throw new Error('Failed to fetch group fasts')
+  console.error("Database error:", error);
+  throw new Error("Failed to fetch group fasts");
 }
 ```
 
@@ -290,26 +385,32 @@ if (error) {
 ## State Management
 
 ### Nuxt Composables (Preferred)
+
 Use Nuxt's built-in composables for state:
+
 - `useState()` for shared state across components
 - `useFetch()` for server-side data fetching
 - `useAsyncData()` for async operations
 
 Example:
+
 ```ts
 // composables/useGlobalState.ts
-export const useNotificationCount = () => useState<number>('notificationCount', () => 0)
+export const useNotificationCount = () =>
+  useState<number>("notificationCount", () => 0);
 
 // In any component:
-const notificationCount = useNotificationCount()
-notificationCount.value = 5 // Updates globally
+const notificationCount = useNotificationCount();
+notificationCount.value = 5; // Updates globally
 ```
 
 ### Supabase Auth State
+
 Access auth state via Supabase composables:
+
 ```ts
-const user = useSupabaseUser() // Reactive user object
-const supabase = useSupabaseClient() // Supabase client
+const user = useSupabaseUser(); // Reactive user object
+const supabase = useSupabaseClient(); // Supabase client
 ```
 
 ---
@@ -317,37 +418,36 @@ const supabase = useSupabaseClient() // Supabase client
 ## Routing & Middleware
 
 ### Protected Routes
-Use middleware to protect routes:
+
+The `@nuxtjs/supabase` module automatically redirects unauthenticated users. Configure in `nuxt.config.ts`:
 
 ```ts
-// layers/auth/app/middleware/auth.ts
-export default defineNuxtRouteMiddleware((to, from) => {
-  const user = useSupabaseUser()
-
-  if (!user.value) {
-    return navigateTo('/sign-in')
-  }
-})
-
-// In page:
-<script setup lang="ts">
-definePageMeta({
-  middleware: 'auth'
-})
-</script>
+// layers/base/nuxt.config.ts
+export default defineNuxtConfig({
+  supabase: {
+    redirectOptions: {
+      login: "/sign-in",
+      callback: "/",
+      exclude: ["/sign-in", "/sign-up", "/"], // Public routes
+    },
+  },
+});
 ```
 
+All routes are protected by default except those in the `exclude` array.
+
 ### Admin Routes
+
 ```ts
 // layers/admin/app/middleware/admin.ts
 export default defineNuxtRouteMiddleware((to, from) => {
-  const user = useSupabaseUser()
-  const role = user.value?.user_metadata?.role
+  const user = useSupabaseUser();
+  const role = user.value?.user_metadata?.role;
 
-  if (!['admin', 'super_admin'].includes(role)) {
-    return navigateTo('/')
+  if (!["admin", "super_admin"].includes(role)) {
+    return navigateTo("/");
   }
-})
+});
 ```
 
 ---
@@ -355,26 +455,31 @@ export default defineNuxtRouteMiddleware((to, from) => {
 ## Styling Guidelines
 
 ### Tailwind CSS
+
 Use Nuxt UI components where possible:
+
 ```vue
 <template>
-  <UButton color="primary" @click="handleClick">
-    Join Fast
-  </UButton>
+  <UButton color="primary" @click="handleClick"> Join Fast </UButton>
 </template>
 ```
 
 Custom styles:
+
 ```vue
 <template>
-  <div class="rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+  <div
+    class="rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+  >
     <!-- Content -->
   </div>
 </template>
 ```
 
 ### Responsive Design
+
 Mobile-first approach:
+
 ```vue
 <div class="flex flex-col md:flex-row gap-4">
   <!-- Stacks on mobile, side-by-side on desktop -->
@@ -386,40 +491,53 @@ Mobile-first approach:
 ## Time & Timezone Handling
 
 ### Critical Rules
+
 1. **Store all times in UTC** in the database (use `timestamptz` in PostgreSQL)
 2. **Convert to user's timezone** for display
 3. **Always show timezone label** to avoid confusion
 
 ### Timezone Utilities
+
 Create utility functions for time conversions:
 
 ```ts
 // utils/time.ts
-import { format, formatDistanceToNow, parseISO } from 'date-fns'
-import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
+import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 
-export function formatInUserTimezone(utcTime: string, userTimezone: string): string {
-  const date = parseISO(utcTime)
-  const zonedDate = utcToZonedTime(date, userTimezone)
-  return format(zonedDate, 'MMM d, yyyy h:mm a')
+export function formatInUserTimezone(
+  utcTime: string,
+  userTimezone: string
+): string {
+  const date = parseISO(utcTime);
+  const zonedDate = utcToZonedTime(date, userTimezone);
+  return format(zonedDate, "MMM d, yyyy h:mm a");
 }
 
-export function calculateHoursFasted(startTime: string, endTime: string): number {
-  const start = parseISO(startTime)
-  const end = parseISO(endTime)
-  return (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+export function calculateHoursFasted(
+  startTime: string,
+  endTime: string
+): number {
+  const start = parseISO(startTime);
+  const end = parseISO(endTime);
+  return (end.getTime() - start.getTime()) / (1000 * 60 * 60);
 }
 
-export function getProgressPercentage(startTime: string, targetHours: number): number {
-  const start = parseISO(startTime)
-  const now = new Date()
-  const elapsedHours = (now.getTime() - start.getTime()) / (1000 * 60 * 60)
-  return Math.min((elapsedHours / targetHours) * 100, 100)
+export function getProgressPercentage(
+  startTime: string,
+  targetHours: number
+): number {
+  const start = parseISO(startTime);
+  const now = new Date();
+  const elapsedHours = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
+  return Math.min((elapsedHours / targetHours) * 100, 100);
 }
 ```
 
 ### Display Times
+
 Always show timezone:
+
 ```vue
 <template>
   <div>
@@ -434,6 +552,7 @@ Always show timezone:
 ## Error Handling
 
 ### Client-Side Errors
+
 ```ts
 try {
   const { data, error } = await supabase
@@ -453,29 +572,29 @@ try {
 ```
 
 ### Server-Side Errors
+
 ```ts
 // server/api/fasts/[id].get.ts
 export default defineEventHandler(async (event) => {
   try {
-    const id = getRouterParam(event, 'id')
-    const supabase = useSupabaseClient()
+    const id = getRouterParam(event, "id");
+    const supabase = useSupabaseClient();
 
     const { data, error } = await supabase
-      .from('group_fasts')
-      .select('*')
-      .eq('id', id)
-      .single()
+      .from("group_fasts")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    if (error) throw error
-    return data
-
+    if (error) throw error;
+    return data;
   } catch (error) {
     throw createError({
       statusCode: 500,
-      message: 'Failed to fetch fast'
-    })
+      message: "Failed to fetch fast",
+    });
   }
-})
+});
 ```
 
 ---
@@ -483,41 +602,43 @@ export default defineEventHandler(async (event) => {
 ## Testing Strategy
 
 ### Unit Tests (Vitest)
+
 Test composables and utility functions:
 
 ```ts
 // composables/__tests__/useAuth.test.ts
-import { describe, it, expect } from 'vitest'
-import { useAuth } from '../useAuth'
+import { describe, it, expect } from "vitest";
+import { useAuth } from "../useAuth";
 
-describe('useAuth', () => {
-  it('should return authenticated state', () => {
-    const { isAuthenticated } = useAuth()
-    expect(isAuthenticated.value).toBe(false)
-  })
-})
+describe("useAuth", () => {
+  it("should return authenticated state", () => {
+    const { isAuthenticated } = useAuth();
+    expect(isAuthenticated.value).toBe(false);
+  });
+});
 ```
 
 ### E2E Tests (Playwright)
+
 Test critical user flows:
 
 ```ts
 // e2e/fast-creation.spec.ts
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('user can create a group fast', async ({ page }) => {
-  await page.goto('/sign-in')
+test("user can create a group fast", async ({ page }) => {
+  await page.goto("/sign-in");
   // Sign in flow...
 
-  await page.goto('/fasts/create')
-  await page.fill('[name="name"]', '72-Hour Challenge')
-  await page.fill('[name="description"]', 'Join us for a 3-day fast!')
-  await page.fill('[name="target_duration_hours"]', '72')
-  await page.click('button[type="submit"]')
+  await page.goto("/fasts/create");
+  await page.fill('[name="name"]', "72-Hour Challenge");
+  await page.fill('[name="description"]', "Join us for a 3-day fast!");
+  await page.fill('[name="target_duration_hours"]', "72");
+  await page.click('button[type="submit"]');
 
-  await expect(page).toHaveURL(/\/fasts\/[a-z0-9-]+/)
-  await expect(page.locator('h1')).toContainText('72-Hour Challenge')
-})
+  await expect(page).toHaveURL(/\/fasts\/[a-z0-9-]+/);
+  await expect(page.locator("h1")).toContainText("72-Hour Challenge");
+});
 ```
 
 ---
@@ -525,28 +646,33 @@ test('user can create a group fast', async ({ page }) => {
 ## Performance Considerations
 
 ### Database Optimization
+
 - **Add indexes** on frequently queried columns (user_id, status, created_at)
 - **Use database views** for complex leaderboard queries
 - **Paginate** long lists (fasts, chat messages, history)
 - **Cache** expensive queries (leaderboard, stats)
 
 ### Frontend Optimization
+
 - **Lazy load** images and components
 - **Code split** admin routes
 - **Use `v-once`** for static content
 - **Implement virtual scrolling** for long lists
 
 ### Supabase Best Practices
+
 - **Select only needed columns** (don't use `select('*')` everywhere)
 - **Use `.single()` when expecting one result**
 - **Batch reads** when possible
 - **Avoid N+1 queries** (use joins)
 
 Example of good query:
+
 ```ts
 const { data } = await supabase
-  .from('fast_participants')
-  .select(`
+  .from("fast_participants")
+  .select(
+    `
     id,
     started_at,
     ended_at,
@@ -554,9 +680,10 @@ const { data } = await supabase
       id,
       raw_user_meta_data
     )
-  `)
-  .eq('group_fast_id', fastId)
-  .order('started_at', { ascending: false })
+  `
+  )
+  .eq("group_fast_id", fastId)
+  .order("started_at", { ascending: false });
 ```
 
 ---
@@ -564,34 +691,38 @@ const { data } = await supabase
 ## Security Guidelines
 
 ### Authentication
+
 - **Never expose Supabase service role key** to the client
 - **Always use anon key** on the client
 - **Verify user identity** server-side for sensitive operations
 
 ### Authorization
+
 - **Rely on RLS policies** for data access control
 - **Double-check permissions** in admin operations
 - **Log admin actions** for audit trail
 
 ### Input Validation
+
 - **Validate all user inputs** with Zod
 - **Sanitize user-generated content** (especially chat messages)
 - **Limit input lengths** to prevent abuse
 
 Example validation:
+
 ```ts
-import { z } from 'zod'
+import { z } from "zod";
 
 const createFastSchema = z.object({
   name: z.string().min(3).max(100),
   description: z.string().max(1000).optional(),
   target_duration_hours: z.number().int().min(1).max(336), // Max 14 days
   start_time: z.string().datetime(),
-})
+});
 
 // In form handler
 try {
-  const validated = createFastSchema.parse(formData)
+  const validated = createFastSchema.parse(formData);
   // Proceed with creation
 } catch (error) {
   // Show validation errors
@@ -603,82 +734,87 @@ try {
 ## Common Patterns & Recipes
 
 ### Fetching User Profile
+
 ```ts
-const { user } = useAuth()
-const profile = ref<UserProfile | null>(null)
+const { user } = useAuth();
+const profile = ref<UserProfile | null>(null);
 
 async function fetchProfile() {
-  if (!user.value) return
+  if (!user.value) return;
 
   const { data } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.value.id)
-    .single()
+    .from("user_profiles")
+    .select("*")
+    .eq("id", user.value.id)
+    .single();
 
-  profile.value = data
+  profile.value = data;
 }
 
-onMounted(() => fetchProfile())
+onMounted(() => fetchProfile());
 ```
 
 ### Joining a Group Fast
+
 ```ts
 async function joinFast(fastId: string) {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const { data, error } = await supabase
-    .from('fast_participants')
+    .from("fast_participants")
     .insert({
       group_fast_id: fastId,
       user_id: user.value.id,
       target_duration_hours: fast.value.target_duration_hours,
-      status: 'active'
+      status: "active",
     })
     .select()
-    .single()
+    .single();
 
   if (error) {
-    if (error.code === '23505') { // Unique constraint violation
-      toast.error('You are already participating in this fast')
+    if (error.code === "23505") {
+      // Unique constraint violation
+      toast.error("You are already participating in this fast");
     } else {
-      toast.error('Failed to join fast')
+      toast.error("Failed to join fast");
     }
-    return
+    return;
   }
 
-  toast.success('Successfully joined the fast!')
+  toast.success("Successfully joined the fast!");
 }
 ```
 
 ### Starting Fast Timer
+
 ```ts
 async function startFastTimer(participantId: string) {
   const { error } = await supabase
-    .from('fast_participants')
+    .from("fast_participants")
     .update({ started_at: new Date().toISOString() })
-    .eq('id', participantId)
+    .eq("id", participantId);
 
   if (error) {
-    toast.error('Failed to start timer')
-    return
+    toast.error("Failed to start timer");
+    return;
   }
 
-  toast.success('Fast timer started!')
+  toast.success("Fast timer started!");
 }
 ```
 
 ### Calculating Progress
+
 ```ts
 function calculateProgress(participant: FastParticipant): number {
-  if (!participant.started_at) return 0
+  if (!participant.started_at) return 0;
 
-  const start = new Date(participant.started_at)
-  const now = new Date()
-  const elapsed = (now.getTime() - start.getTime()) / (1000 * 60 * 60)
-  const target = participant.target_duration_hours
+  const start = new Date(participant.started_at);
+  const now = new Date();
+  const elapsed = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
+  const target = participant.target_duration_hours;
 
-  return Math.min((elapsed / target) * 100, 100)
+  return Math.min((elapsed / target) * 100, 100);
 }
 ```
 
@@ -687,25 +823,30 @@ function calculateProgress(participant: FastParticipant): number {
 ## Debugging Tips
 
 ### Supabase Debug
+
 Enable query logging:
+
 ```ts
-const supabase = useSupabaseClient()
+const supabase = useSupabaseClient();
 
 // In development, log all queries
 if (process.dev) {
-  supabase.channel('debug').on('*', payload => {
-    console.log('Supabase event:', payload)
-  })
+  supabase.channel("debug").on("*", (payload) => {
+    console.log("Supabase event:", payload);
+  });
 }
 ```
 
 ### Check RLS Policies
+
 If queries return empty:
+
 1. Check if RLS is enabled on the table
 2. Verify policies allow the operation
 3. Test with Supabase dashboard SQL editor
 
 ### Common Issues
+
 - **"Row not found"**: Check RLS policies
 - **"Unique constraint violation"**: User trying to join same fast twice
 - **Timezone confusion**: Always convert to user's timezone for display
@@ -716,6 +857,7 @@ If queries return empty:
 ## When Adding New Features
 
 ### Checklist
+
 1. [ ] Design database schema (tables, columns, relationships)
 2. [ ] Write migration file
 3. [ ] Add RLS policies
@@ -726,20 +868,21 @@ If queries return empty:
 8. [ ] Handle loading and error states
 9. [ ] Add validation with Zod
 10. [ ] Write unit tests for composables
-11. [ ] Write E2E test for user flow
-12. [ ] Update `TODO.md` to mark tasks complete
+11. [ ] Update `TODO.md` to mark tasks complete
 
 ---
 
 ## Project-Specific Notes
 
 ### User Roles
+
 - `pending`: Newly registered, awaiting approval
 - `approved`: Can access app and all features
 - `admin`: Can moderate content, manage users (cannot promote to super_admin)
 - `super_admin`: Full access, can promote other admins
 
 ### Fast Participation Rules
+
 - Users can have **ONE active group fast** at a time
 - Users can have **ONE active personal fast** at a time
 - Users can join a fast late (after start time)
@@ -747,7 +890,9 @@ If queries return empty:
 - Fasts close when last participant ends OR admin closes manually
 
 ### Notification Events
+
 All notifications are **in-app only** (no push/email in v1):
+
 - User joins your fast
 - Fast starting in 1 hour
 - Milestone reached (24hr, 48hr, 72hr)
@@ -757,7 +902,9 @@ All notifications are **in-app only** (no push/email in v1):
 - New user registration (admins only)
 
 ### Leaderboard Logic
+
 Rankings are by **absolute hours fasted**, not percentage of target:
+
 - User A: 36 hours out of 48-hour fast → 36 hours rank
 - User B: 24 hours out of 72-hour fast → 24 hours rank
 - User A ranks higher than User B
@@ -767,12 +914,14 @@ Rankings are by **absolute hours fasted**, not percentage of target:
 ## Resources
 
 ### Documentation
+
 - [Nuxt 3 Docs](https://nuxt.com/docs)
 - [Supabase Docs](https://supabase.com/docs)
 - [Tailwind CSS Docs](https://tailwindcss.com/docs)
 - [Nuxt UI Components](https://ui.nuxt.com/)
 
 ### Supabase CLI
+
 ```bash
 # Install
 brew install supabase/tap/supabase

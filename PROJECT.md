@@ -261,6 +261,51 @@ Colors derived from "What I've Learned" YouTube channel thumbnails:
 
 ## Development Approach
 
+### Hybrid Development Workflow
+
+This project uses a **hybrid local + remote development approach** for optimal developer experience:
+
+#### Local Development (Primary)
+- **What**: Database schema, migrations, business logic, UI components, composables
+- **Tool**: Supabase CLI + Docker
+- **Benefits**:
+  - Instant feedback loop
+  - Free (no quota usage)
+  - Offline work capability
+  - Version-controlled migrations
+- **Commands**:
+  ```bash
+  supabase start          # Start local Supabase stack
+  pnpm dev               # Run Nuxt with local DB
+  supabase migration new  # Create migrations
+  supabase db reset      # Apply migrations locally
+  ```
+
+#### Remote Staging (OAuth & Integration Testing)
+- **What**: OAuth flows (Google/Apple login), Storage bucket, full integration testing
+- **Tool**: Hosted Supabase project
+- **Why**: Social auth providers require public callback URLs (can't use localhost easily)
+- **Commands**:
+  ```bash
+  supabase link --project-ref <staging-id>
+  supabase db push       # Push local migrations to staging
+  # Use .env.staging for OAuth testing
+  pnpm dev               # Test with remote staging
+  ```
+
+#### Migration Strategy
+1. **Develop locally**: Create migrations, test schema changes
+2. **Push to staging**: `supabase db push` to sync local → remote
+3. **Test on staging**: Verify OAuth, integrations, full user flows
+4. **Deploy to production**: Same migrations, battle-tested
+
+#### Environment Management
+- `.env` - Local Supabase (default for development)
+- `.env.staging` - Remote staging (for OAuth testing)
+- `.env.production` - Production (deployment only)
+
+### Development Phases
+
 ### Phase 1: Foundation (Current)
 - Set up Supabase project and database schema
 - Implement OAuth with admin approval flow
@@ -302,22 +347,90 @@ NUXT_SESSION_PASSWORD=random_32_char_string
 
 ## Development Commands
 
+### Local Development (Default)
 ```bash
 # Install dependencies
 pnpm install
 
-# Run development server
+# Start local Supabase stack (requires Docker)
+supabase start
+
+# Run Nuxt development server (connects to local Supabase)
 pnpm dev
+
+# Stop local Supabase stack
+supabase stop
 
 # Build for production
 pnpm build
 
 # Preview production build
 pnpm preview
+```
 
-# Supabase migrations (to be added)
-supabase migration new migration_name
+### Database Migrations (Local First)
+```bash
+# Create a new migration
+supabase migration new create_users_table
+
+# Apply migrations locally (resets DB and applies all migrations)
+supabase db reset
+
+# Check migration status
+supabase db diff
+
+# Generate TypeScript types from local DB
+supabase gen types typescript --local > types/database.ts
+```
+
+### Remote Staging (OAuth Testing)
+```bash
+# Link to remote staging project (one-time setup)
+supabase link --project-ref <your-staging-project-ref>
+
+# Push local migrations to remote staging
 supabase db push
+
+# Pull schema changes from remote (if needed)
+supabase db pull
+
+# Generate TypeScript types from remote
+supabase gen types typescript --linked > types/database.ts
+
+# Run Nuxt with staging environment
+cp .env.staging .env
+pnpm dev
+```
+
+### Switching Environments
+```bash
+# Use local Supabase (default)
+cp .env.local .env  # or just use default .env
+supabase start
+pnpm dev
+
+# Use remote staging (for OAuth testing)
+cp .env.staging .env
+pnpm dev
+
+# Back to local
+cp .env.local .env
+pnpm dev
+```
+
+### Useful Supabase CLI Commands
+```bash
+# View local Supabase dashboard
+supabase status  # Shows URLs and credentials
+
+# Check local Supabase logs
+supabase logs
+
+# Restart local services
+supabase stop && supabase start
+
+# Unlink from remote
+supabase unlink
 ```
 
 ## Deployment Strategy
