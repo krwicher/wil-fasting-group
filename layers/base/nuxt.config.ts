@@ -7,8 +7,15 @@ export default defineNuxtConfig({
   supabase: {
     redirectOptions: {
       login: "/sign-in",
-      callback: "/",
-      exclude: ["/sign-in", "/sign-up", "/"],
+      callback: "/auth/callback",
+      exclude: [
+        "/sign-in",
+        "/sign-up",
+        "/",
+        "/auth/callback",
+        "/auth/complete-profile",
+        "/auth/pending",
+      ],
     },
   },
   runtimeConfig: {

@@ -29,9 +29,18 @@ const fields = [
 async function handleSubmit(payload: any) {
   const email = payload.data.email;
   const password = payload.data.password;
+
+  // Auto-detect timezone
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        timezone: timezone,
+      },
+    },
   });
   if (error) displayError(error);
   else {
@@ -41,6 +50,7 @@ async function handleSubmit(payload: any) {
       color: "success",
     });
     await signIn(email, password);
+    // The approval middleware will redirect to complete-profile or pending
     await navigateTo("/", { replace: true });
   }
 }
@@ -61,6 +71,37 @@ const displayError = (error: any) => {
     color: "error",
   });
 };
+
+const oauthLoading = ref(false);
+
+async function signUpWithGoogle() {
+  oauthLoading.value = true;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  if (error) {
+    displayError(error);
+    oauthLoading.value = false;
+  }
+}
+
+async function signUpWithApple() {
+  oauthLoading.value = true;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "apple",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  if (error) {
+    displayError(error);
+    oauthLoading.value = false;
+  }
+}
+
 const schema = z.object({
   email: z.string().email("Niepoprawny adres e-mail"),
   password: z.string().min(8, "Hasło musi mieć co najmniej 8 znaków"),
@@ -88,13 +129,58 @@ const schema = z.object({
           Wypełnij poniższy formularz, aby założyć nowe konto i uzyskać dostęp
           do wszystkich funkcji.
         </template>
+
+        <template #footer>
+          <div class="mt-6 space-y-3">
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500"
+                  >Or continue with</span
+                >
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="lg"
+                :loading="oauthLoading"
+                @click="signUpWithGoogle"
+                block
+              >
+                <template #leading>
+                  <UIcon name="i-logos-google-icon" class="w-5 h-5" />
+                </template>
+                Google
+              </UButton>
+
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="lg"
+                :loading="oauthLoading"
+                @click="signUpWithApple"
+                block
+              >
+                <template #leading>
+                  <UIcon name="i-logos-apple" class="w-5 h-5" />
+                </template>
+                Apple
+              </UButton>
+            </div>
+          </div>
+        </template>
       </UAuthForm>
     </div>
     <div class="sign-up-image hidden lg:block">
       <NuxtImg
         src="/images/sign-up.jpg"
         alt="Sign up"
-        class="object-cover max-h-[calc(100vh-169px)] w-full"
+        class="object-cover h-full w-full"
       />
     </div>
   </div>

@@ -29,7 +29,7 @@ const fields = [
 async function handleSubmit(payload: any) {
   const email = payload.data.email;
   const password = payload.data.password;
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -40,7 +40,16 @@ async function handleSubmit(payload: any) {
       icon: "i-lucide-check-circle",
       color: "success",
     });
-    await navigateTo("/", { replace: true });
+
+    // Check if user needs to complete their profile
+    const needsProfileCompletion = !data.user?.user_metadata?.display_name;
+
+    if (needsProfileCompletion) {
+      await navigateTo("/auth/complete-profile", { replace: true });
+    } else {
+      // The approval middleware will redirect to pending if needed
+      await navigateTo("/", { replace: true });
+    }
   }
 }
 
@@ -52,6 +61,37 @@ const displayError = (error: any) => {
     color: "error",
   });
 };
+
+const oauthLoading = ref(false);
+
+async function signInWithGoogle() {
+  oauthLoading.value = true;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  if (error) {
+    displayError(error);
+    oauthLoading.value = false;
+  }
+}
+
+async function signInWithApple() {
+  oauthLoading.value = true;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "apple",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  if (error) {
+    displayError(error);
+    oauthLoading.value = false;
+  }
+}
+
 const schema = z.object({
   email: z.string().email("Niepoprawny adres e-mail"),
   password: z.string().min(8, "Hasło musi mieć co najmniej 8 znaków"),
@@ -78,6 +118,49 @@ const schema = z.object({
         <template #description>
           Wprowadź swój adres e-mail i hasło, aby uzyskać dostęp do swojego
           konta.
+        </template>
+
+        <template #footer>
+          <div class="mt-6 space-y-3">
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="lg"
+                :loading="oauthLoading"
+                @click="signInWithGoogle"
+                block
+              >
+                <template #leading>
+                  <UIcon name="i-logos-google-icon" class="w-5 h-5" />
+                </template>
+                Google
+              </UButton>
+
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="lg"
+                :loading="oauthLoading"
+                @click="signInWithApple"
+                block
+              >
+                <template #leading>
+                  <UIcon name="i-logos-apple" class="w-5 h-5" />
+                </template>
+                Apple
+              </UButton>
+            </div>
+          </div>
         </template>
       </UAuthForm>
     </div>

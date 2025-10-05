@@ -248,33 +248,33 @@ open http://127.0.0.1:54323
 
 ## Phase 2: Authentication & User Management 🔐
 
-### 2.1 Authentication Flow Enhancement
+### 2.1 Authentication Flow Enhancement ✅
 
-- [ ] Update `useAuth` composable to handle approval status
-- [ ] Create `useUserRole` composable for role checking
-- [ ] Add OAuth callback handling for Google
-- [ ] Add OAuth callback handling for Apple
-- [ ] Create post-signup profile completion flow
-- [ ] Add timezone detection on signup
-- [ ] Create "pending approval" screen for new users
-- [ ] Add middleware to block unapproved users from main app
+- [x] Update `useAuth` composable to handle approval status
+- [x] Create `useUserRole` composable for role checking
+- [x] Add OAuth callback handling for Google
+- [x] Add OAuth callback handling for Apple
+- [x] Create post-signup profile completion flow
+- [x] Add timezone detection on signup
+- [x] Create "pending approval" screen for new users
+- [x] Add middleware to block unapproved users from main app
 
-### 2.2 User Profile Pages
+### 2.2 User Profile Pages ✅
 
-- [ ] Create `/profile` page
-  - [ ] Display user stats (total hours, longest fast, current streak)
-  - [ ] Show circular progress indicator for active fast
-  - [ ] Display fast history table
-  - [ ] Add "Edit Profile" button
-- [ ] Create `/profile/edit` page
-  - [ ] Upload/change avatar (Supabase Storage)
-  - [ ] Edit display name
-  - [ ] Edit bio
-  - [ ] Change timezone
-  - [ ] Add "Delete All My Data" button with confirmation
-- [ ] Create `useUserProfile` composable
-- [ ] Create `useUserStats` composable
-- [ ] Add profile avatar component with fallback initials
+- [x] Create `/profile` page
+  - [x] Display user stats (total hours, longest fast, current streak)
+  - [x] Show circular progress indicator for active fast
+  - [x] Display fast history table
+  - [x] Add "Edit Profile" button
+- [x] Create `/profile/edit` page
+  - [x] Upload/change avatar (Supabase Storage)
+  - [x] Edit display name
+  - [x] Edit bio
+  - [x] Change timezone
+  - [x] Add "Delete All My Data" button with confirmation
+- [x] Create `useUserProfile` composable
+- [x] Create `useUserStats` composable
+- [x] Add profile avatar component with fallback initials
 
 ### 2.3 Admin User Management
 
