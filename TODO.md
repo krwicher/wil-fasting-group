@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phase**: Foundation Setup - Phase 1.1 Complete
+**Phase**: Foundation Setup - Phase 1.2 Complete
 **Last Updated**: October 5, 2025
 
 ---
@@ -89,60 +89,67 @@ open http://127.0.0.1:54323
 - ✅ Supabase starts successfully
 - ⚠️ OAuth configuration is pending (manual task via web consoles)
 
-### 1.2 Database Schema - Core Tables
+### 1.2 Database Schema - Core Tables ✅
 
-- [ ] Create `user_roles` enum type (pending, approved, admin, super_admin)
-- [ ] Create `fast_status` enum type (upcoming, active, completed, closed)
-- [ ] Create `participation_status` enum type (active, completed, quit_early, extended)
-- [ ] Create migration: `users` table extension
-  - [ ] Add `role` column (references user_roles enum)
-  - [ ] Add `approved_at` timestamp
-  - [ ] Add `approved_by` uuid reference
-  - [ ] Add RLS policies
-- [ ] Create migration: `user_profiles` table
-  - [ ] `id` (uuid, FK to auth.users)
-  - [ ] `display_name` text
-  - [ ] `avatar_url` text
-  - [ ] `bio` text
-  - [ ] `timezone` text
-  - [ ] `created_at`, `updated_at` timestamps
-  - [ ] Add RLS policies
-- [ ] Create migration: `group_fasts` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `name` text
-  - [ ] `description` text
-  - [ ] `creator_id` (uuid, FK to users)
-  - [ ] `start_time` timestamptz
-  - [ ] `target_duration_hours` integer
-  - [ ] `status` (references fast_status enum)
-  - [ ] `created_at`, `updated_at`, `closed_at` timestamps
-  - [ ] Add RLS policies
-- [ ] Create migration: `fast_participants` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `user_id` (uuid, FK to users)
-  - [ ] `group_fast_id` (uuid, FK to group_fasts)
-  - [ ] `started_at` timestamptz (nullable)
-  - [ ] `ended_at` timestamptz (nullable)
-  - [ ] `target_duration_hours` integer
-  - [ ] `status` (references participation_status enum)
-  - [ ] `notes` text
-  - [ ] `feeling` text
-  - [ ] `created_at`, `updated_at` timestamps
-  - [ ] Add unique constraint: one active participation per user
-  - [ ] Add RLS policies
-- [ ] Create migration: `personal_fasts` table
-  - [ ] `id` (uuid, PK)
-  - [ ] `user_id` (uuid, FK to users)
-  - [ ] `name` text
-  - [ ] `started_at` timestamptz
-  - [ ] `ended_at` timestamptz (nullable)
-  - [ ] `target_duration_hours` integer
-  - [ ] `status` (references participation_status enum)
-  - [ ] `notes` text
-  - [ ] `feeling` text
-  - [ ] `created_at`, `updated_at` timestamps
-  - [ ] Add constraint: one active personal fast per user
-  - [ ] Add RLS policies
+- [x] Create `user_roles` enum type (pending, approved, admin, super_admin) - `20251005095004_create_enums.sql`
+- [x] Create `fast_status` enum type (upcoming, active, completed, closed) - `20251005095004_create_enums.sql`
+- [x] Create `participation_status` enum type (active, completed, quit_early, extended) - `20251005095004_create_enums.sql`
+- [x] Create migration: `users` table extension - `20251005095018_extend_users_table.sql`
+  - [x] Helper functions: `get_user_role()`, `is_user_approved()`, `is_user_admin()`
+  - [x] Trigger: `handle_new_user()` sets default role and timezone
+  - [x] Stores role in `raw_user_meta_data->>'role'`
+- [x] Create migration: `user_profiles` table - `20251005095038_create_user_profiles_table.sql`
+  - [x] `id` (uuid, FK to auth.users)
+  - [x] `display_name`, `bio`, `avatar_url` text
+  - [x] `timezone` text
+  - [x] `notification_preferences` jsonb
+  - [x] `profile_visibility` (public/community/private)
+  - [x] Statistics: `total_fasts_completed`, `total_hours_fasted`, `longest_fast_hours`, `current_streak_days`
+  - [x] `created_at`, `updated_at` timestamps
+  - [x] Add RLS policies (view own, view public/community, admins view all)
+  - [x] Trigger: Auto-create profile on user registration
+- [x] Create migration: `group_fasts` table - `20251005095059_create_group_fasts_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `name`, `description` text
+  - [x] `creator_id` (uuid, FK to users)
+  - [x] `start_time` timestamptz
+  - [x] `target_duration_hours` integer
+  - [x] `status` (references fast_status enum)
+  - [x] Settings: `is_public`, `max_participants`, `allow_late_join`, `chat_enabled`
+  - [x] Statistics: `participant_count`, `active_participant_count`
+  - [x] `created_at`, `updated_at` timestamps
+  - [x] Add RLS policies (view public, creators update own, admins manage all)
+  - [x] Trigger: Auto-update status to 'active' when start_time passes
+- [x] Create migration: `fast_participants` table - `20251005095122_create_fast_participants_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `user_id` (uuid, FK to users)
+  - [x] `group_fast_id` (uuid, FK to group_fasts)
+  - [x] `started_at` timestamptz (nullable)
+  - [x] `ended_at` timestamptz (nullable)
+  - [x] `target_duration_hours` integer
+  - [x] `status` (references participation_status enum)
+  - [x] `notes`, `quit_reason` text
+  - [x] `created_at`, `updated_at` timestamps
+  - [x] Add unique constraint: `(group_fast_id, user_id)`
+  - [x] Add constraint: one active group fast per user
+  - [x] Add RLS policies (participants view same fast, users manage own)
+  - [x] Trigger: Update `group_fasts` participant counts
+  - [x] Trigger: Update user profile stats on completion
+- [x] Create migration: `personal_fasts` table - `20251005095151_create_personal_fasts_table.sql`
+  - [x] `id` (uuid, PK)
+  - [x] `user_id` (uuid, FK to users)
+  - [x] `name` text (optional)
+  - [x] `started_at` timestamptz
+  - [x] `ended_at` timestamptz (nullable)
+  - [x] `target_duration_hours` integer
+  - [x] `status` (references participation_status enum)
+  - [x] `notes`, `quit_reason` text
+  - [x] `created_at`, `updated_at` timestamps
+  - [x] Add constraint: one active personal fast per user
+  - [x] Add RLS policies (users view/manage own, admins view all)
+  - [x] Trigger: Update user profile stats on completion
+- [x] Create utility functions - `20251005095000_create_utility_functions.sql`
+  - [x] `update_updated_at_column()` trigger function
 
 ### 1.3 Database Schema - Supporting Tables
 
