@@ -31,7 +31,7 @@ const fields = [
     type: "text" as const,
     label: "Timezone",
     placeholder: "Auto-detected",
-    required: true,
+    required: false,
     size: "xl" as const,
   },
 ];
@@ -41,13 +41,13 @@ const schema = z.object({
     .string()
     .min(2, "Display name must be at least 2 characters")
     .max(50, "Display name must be less than 50 characters"),
-  timezone: z.string().min(1, "Timezone is required"),
+  timezone: z.string().optional(),
 });
 
 async function handleSubmit(payload: any) {
   try {
     const displayName = payload.data.display_name;
-    const timezone = payload.data.timezone;
+    const timezone = payload.data.timezone || detectedTimezone.value;
 
     // Update user metadata
     const { error: updateError } = await supabase.auth.updateUser({
