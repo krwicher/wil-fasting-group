@@ -86,10 +86,44 @@ export const useAdmin = () => {
   };
 
   /**
-   * Approve user (set role to 'approved')
+   * Approve user (set approval_status to 'approved' and role to 'approved')
    */
   const approveUser = async (userId: string): Promise<boolean> => {
-    return await updateUserRole(userId, "approved");
+    if (!isAdmin.value) {
+      error.value = "Unauthorized";
+      return false;
+    }
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await repository.approveUser(userId);
+
+      toast.add({
+        title: "Success",
+        description: "User approved successfully",
+        icon: "i-lucide-check-circle",
+        color: "success",
+      });
+
+      // Refresh users list
+      await fetchUsers();
+
+      return true;
+    } catch (err) {
+      error.value = (err as Error).message;
+      console.error("Error approving user:", err);
+      toast.add({
+        title: "Error",
+        description: "Failed to approve user",
+        icon: "i-lucide-alert-circle",
+        color: "error",
+      });
+      return false;
+    } finally {
+      loading.value = false;
+    }
   };
 
   /**

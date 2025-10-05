@@ -1,10 +1,13 @@
 import type { UserRole } from "~/layers/auth/app/composables/useAuth";
 
+export type ApprovalStatus = "pending" | "approved" | "rejected";
+
 export interface AdminUser {
   id: string;
   email: string;
   display_name: string | null;
   role: UserRole;
+  approval_status: ApprovalStatus;
   created_at: string;
   updated_at: string | null;
   last_sign_in_at: string | null;
