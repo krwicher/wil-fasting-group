@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase**: Foundation Setup - Phase 1.4 Complete
+**Phase**: Foundation Setup - Phase 1 Complete ✅
 **Last Updated**: October 5, 2025
 
 ---
 
-## Phase 1: Foundation & Setup ⏳
+## Phase 1: Foundation & Setup ✅
 
 ### 1.1 Supabase Project Setup (Hybrid Approach) ✅
 
@@ -231,11 +231,18 @@ open http://127.0.0.1:54323
   - [x] `pending_user_approvals` - admin view of pending users
   - [x] `recent_activity` - feed of recent completions and achievements
 
-### 1.5 Seed Data
+### 1.5 Seed Data ✅
 
-- [ ] Create seed script: Default achievements (24hr, 48hr, 72hr, 5-day, 7-day, 100hr total, 500hr total)
-- [ ] Create seed script: First super admin user (for testing)
-- [ ] Add sample group fasts for testing
+- [x] Default achievements seeded in migration `20251005103429_create_achievements_table.sql`
+  - [x] 17 achievements across 5 categories (fasting_duration, participation, consistency, community, milestones)
+  - [x] Bronze, silver, gold, platinum, and diamond tiers
+- [x] Create standalone seed script `scripts/seed.js`
+  - [x] Promotes user to super_admin
+  - [x] Creates 4 sample group fasts (upcoming, active, completed)
+  - [x] Auto-joins admin to active fast
+  - [x] Creates sample personal fast
+  - [x] Can be run independently with environment variables
+- [x] Create `scripts/README.md` with usage instructions
 
 ---
 
