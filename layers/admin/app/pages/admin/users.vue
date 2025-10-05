@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { AdminUser } from "~/layers/admin/shared/types/admin";
-
 definePageMeta({
   middleware: ["admin"],
 });
 
-const { users, loading, fetchUsers, approveUser, rejectUser, updateUserRole } = useAdmin();
+const { users, loading, fetchUsers, approveUser, rejectUser, updateUserRole } =
+  useAdmin();
 const { isSuperAdmin } = useUserRole();
 
 const selectedRole = ref<string>("all");
@@ -33,7 +32,11 @@ const handleApprove = async (userId: string) => {
 
 // Handle reject
 const handleReject = async (userId: string) => {
-  if (confirm("Are you sure you want to reject and delete this user? This action cannot be undone.")) {
+  if (
+    confirm(
+      "Are you sure you want to reject and delete this user? This action cannot be undone."
+    )
+  ) {
     await rejectUser(userId);
   }
 };
@@ -97,7 +100,12 @@ const formatDateTime = (dateString: string) => {
           <h1 class="text-3xl font-bold mb-2">User Management</h1>
           <p class="text-gray-600">Manage user accounts and permissions</p>
         </div>
-        <UButton color="neutral" variant="outline" icon="i-lucide-arrow-left" to="/admin/dashboard">
+        <UButton
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-arrow-left"
+          to="/admin/dashboard"
+        >
           Back to Dashboard
         </UButton>
       </div>
@@ -122,31 +130,49 @@ const formatDateTime = (dateString: string) => {
 
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center min-h-[400px]">
-      <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-500" />
+      <UIcon
+        name="i-lucide-loader-2"
+        class="w-8 h-8 animate-spin text-primary-500"
+      />
     </div>
 
     <!-- Users Table -->
-    <div v-else-if="users.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div
+      v-else-if="users.length > 0"
+      class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+    >
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 User
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Email
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Role
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Joined
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Last Sign In
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -182,7 +208,11 @@ const formatDateTime = (dateString: string) => {
               <!-- Last Sign In -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-600">
-                  {{ user.last_sign_in_at ? formatDateTime(user.last_sign_in_at) : "Never" }}
+                  {{
+                    user.last_sign_in_at
+                      ? formatDateTime(user.last_sign_in_at)
+                      : "Never"
+                  }}
                 </div>
               </td>
 
@@ -229,8 +259,14 @@ const formatDateTime = (dateString: string) => {
     </div>
 
     <!-- Empty State -->
-    <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-      <UIcon name="i-lucide-users" class="w-12 h-12 mx-auto mb-4 text-gray-400" />
+    <div
+      v-else
+      class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
+    >
+      <UIcon
+        name="i-lucide-users"
+        class="w-12 h-12 mx-auto mb-4 text-gray-400"
+      />
       <p class="text-lg text-gray-700">No users found</p>
       <p class="text-sm text-gray-500">Try changing the filter</p>
     </div>
@@ -245,12 +281,17 @@ const formatDateTime = (dateString: string) => {
         <div v-if="selectedUser" class="space-y-4">
           <div>
             <p class="text-sm text-gray-600 mb-1">User:</p>
-            <p class="font-medium">{{ selectedUser.display_name || selectedUser.email }}</p>
+            <p class="font-medium">
+              {{ selectedUser.display_name || selectedUser.email }}
+            </p>
           </div>
 
           <div>
             <p class="text-sm text-gray-600 mb-1">Current Role:</p>
-            <UBadge :color="getRoleBadgeColor(selectedUser.role)" variant="subtle">
+            <UBadge
+              :color="getRoleBadgeColor(selectedUser.role)"
+              variant="subtle"
+            >
               {{ selectedUser.role.replace("_", " ") }}
             </UBadge>
           </div>
@@ -300,7 +341,11 @@ const formatDateTime = (dateString: string) => {
 
         <template #footer>
           <div class="flex justify-end">
-            <UButton color="neutral" variant="outline" @click="showRoleModal = false">
+            <UButton
+              color="neutral"
+              variant="outline"
+              @click="showRoleModal = false"
+            >
               Cancel
             </UButton>
           </div>

@@ -44,7 +44,10 @@ const refreshData = async () => {
 
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center min-h-[400px]">
-      <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-500" />
+      <UIcon
+        name="i-lucide-loader-2"
+        class="w-8 h-8 animate-spin text-primary-500"
+      />
     </div>
 
     <!-- Dashboard Content -->
@@ -67,10 +70,15 @@ const refreshData = async () => {
           <p class="text-sm text-gray-600">Approve users and manage roles</p>
         </NuxtLink>
 
-        <div class="block bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div
+          class="block bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+        >
           <div class="flex items-center justify-between mb-4">
             <div class="p-3 bg-success-100 rounded-lg">
-              <UIcon name="i-lucide-activity" class="w-6 h-6 text-success-600" />
+              <UIcon
+                name="i-lucide-activity"
+                class="w-6 h-6 text-success-600"
+              />
             </div>
           </div>
           <h3 class="text-lg font-semibold mb-1">Activity Logs</h3>
@@ -95,15 +103,22 @@ const refreshData = async () => {
               <UIcon name="i-lucide-clock" class="w-5 h-5 text-yellow-600" />
               <p class="text-sm text-yellow-800">Pending Approval</p>
             </div>
-            <p class="text-3xl font-bold text-yellow-900">{{ stats.pending_users }}</p>
+            <p class="text-3xl font-bold text-yellow-900">
+              {{ stats.pending_users }}
+            </p>
           </div>
 
           <div class="p-4 bg-green-50 rounded-lg">
             <div class="flex items-center gap-3 mb-2">
-              <UIcon name="i-lucide-check-circle" class="w-5 h-5 text-green-600" />
+              <UIcon
+                name="i-lucide-check-circle"
+                class="w-5 h-5 text-green-600"
+              />
               <p class="text-sm text-green-800">Approved</p>
             </div>
-            <p class="text-3xl font-bold text-green-900">{{ stats.approved_users }}</p>
+            <p class="text-3xl font-bold text-green-900">
+              {{ stats.approved_users }}
+            </p>
           </div>
 
           <div class="p-4 bg-blue-50 rounded-lg">
@@ -111,7 +126,9 @@ const refreshData = async () => {
               <UIcon name="i-lucide-shield" class="w-5 h-5 text-blue-600" />
               <p class="text-sm text-blue-800">Admins</p>
             </div>
-            <p class="text-3xl font-bold text-blue-900">{{ stats.admin_users }}</p>
+            <p class="text-3xl font-bold text-blue-900">
+              {{ stats.admin_users }}
+            </p>
           </div>
         </div>
       </div>
@@ -133,7 +150,9 @@ const refreshData = async () => {
               <UIcon name="i-lucide-flame" class="w-5 h-5 text-purple-600" />
               <p class="text-sm text-purple-800">Active Fasts</p>
             </div>
-            <p class="text-3xl font-bold text-purple-900">{{ stats.active_fasts }}</p>
+            <p class="text-3xl font-bold text-purple-900">
+              {{ stats.active_fasts }}
+            </p>
           </div>
 
           <div class="p-4 bg-indigo-50 rounded-lg">
@@ -141,7 +160,9 @@ const refreshData = async () => {
               <UIcon name="i-lucide-users-2" class="w-5 h-5 text-indigo-600" />
               <p class="text-sm text-indigo-800">Total Participants</p>
             </div>
-            <p class="text-3xl font-bold text-indigo-900">{{ stats.total_participants }}</p>
+            <p class="text-3xl font-bold text-indigo-900">
+              {{ stats.total_participants }}
+            </p>
           </div>
         </div>
       </div>
@@ -154,7 +175,11 @@ const refreshData = async () => {
             <h3 class="font-semibold text-blue-900 mb-2">Admin Capabilities</h3>
             <ul class="text-sm text-blue-800 space-y-1">
               <li>✓ Approve or reject user registrations</li>
-              <li>✓ Change user roles (approved, admin{{ isSuperAdmin ? ', super_admin' : '' }})</li>
+              <li>
+                ✓ Change user roles (approved, admin{{
+                  isSuperAdmin ? ", super_admin" : ""
+                }})
+              </li>
               <li>✓ View all users and their activity</li>
               <li>✓ Monitor platform statistics</li>
               <li v-if="!isSuperAdmin" class="text-blue-600">
@@ -168,7 +193,10 @@ const refreshData = async () => {
 
     <!-- Error State -->
     <div v-else class="text-center py-12">
-      <UIcon name="i-lucide-alert-circle" class="w-12 h-12 mx-auto mb-4 text-red-500" />
+      <UIcon
+        name="i-lucide-alert-circle"
+        class="w-12 h-12 mx-auto mb-4 text-red-500"
+      />
       <p class="text-lg text-gray-700">Failed to load admin statistics</p>
       <UButton color="primary" class="mt-4" @click="refreshData">
         Retry

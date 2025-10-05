@@ -28,11 +28,11 @@ onMounted(async () => {
 
 const searchTerm = ref("");
 const navigationItems = ref([
-  {
-    label: "Leady",
-    type: "link",
-    to: "/leads",
-  },
+  // {
+  //   label: "Leady",
+  //   type: "link",
+  //   to: "/leads",
+  // },
 ]);
 </script>
 

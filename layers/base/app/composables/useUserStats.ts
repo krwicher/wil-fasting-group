@@ -1,5 +1,4 @@
-import { StatsRepository } from "~/layers/base/app/repositories/statsRepository";
-import type { UserStats } from "~/layers/base/app/repositories/statsRepository";
+import { StatsRepository } from "../repositories/statsRepository";
 
 export const useUserStats = () => {
   const supabase = useSupabaseClient();

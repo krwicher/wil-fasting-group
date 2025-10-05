@@ -1,5 +1,4 @@
-import type { UserProfile, UpdateProfileData } from "~/layers/base/shared/types/profile";
-import { UserRepository } from "~/layers/base/app/repositories/userRepository";
+import { UserRepository } from "../repositories/userRepository";
 
 export const useUserProfile = () => {
   const supabase = useSupabaseClient();
@@ -37,7 +36,9 @@ export const useUserProfile = () => {
   /**
    * Fetch a specific user's profile by ID
    */
-  const fetchProfileById = async (userId: string): Promise<UserProfile | null> => {
+  const fetchProfileById = async (
+    userId: string
+  ): Promise<UserProfile | null> => {
     try {
       return await repository.getProfile(userId);
     } catch (err) {
